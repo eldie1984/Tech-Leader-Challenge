@@ -3,10 +3,10 @@ from shapely.geometry import Point, shape
 
 continents = {}
 
-with open("continents.json", "r") as file:
-    continentsJson = json.load(file)
+with open("/Users/dgasch/projects/Tech-Leader-Challenge/Firesat23/utils/continents.json", "r") as file:
+    continents = json.load(file)
 
-for continent in continents:
+for continent in continents.keys():
     continents[continent] = shape(continents[continent])
 
 
