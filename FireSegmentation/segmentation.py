@@ -1,14 +1,28 @@
 from utils.geodesic_distance import geodesic_distance
-from utils.list_operations import addFireToList
 from datetime import datetime
 import logging
 
 def segmentacionDeIncendios(fuegos: list[dict], d: float, t: float) -> tuple[int,list[list[str]]]:
-  # Completar el código en esta funcion
-  # Se recomienda modularizar la solucion para hacer más claro el código
-  # Se recomienda usar la función "geodesic_distance" del archivo "utils/geodesic_distance.py"
+    """
+    This function segments fires based on geodesic distance and time.
+    It returns a tuple containing the number of fire segments and a list of fire segments.
+    Each fire segment is a list of fire IDs.
+    """
+    # Initialize the list of fire segments with the first fire
+    fire_segments = [[fuegos[0]['id']]]
+    for i in range(1, len(fuegos)):
+        # Calculate the geodesic distance and time difference to the last fire in the current segment
+        distance = geodesic_distance((fuegos[i-1]['x'], fuegos[i-1]['y']), (fuegos[i]['x'], fuegos[i]['y']))
+        time_difference = (datetime.fromisoformat(fuegos[i]['time']) - datetime.fromisoformat(fuegos[i-1]['time'])).total_seconds() / 60
 
-  return (2, [["0", "1", "2"], ["3", "4"]])
+        # If the distance or time difference is too large, start a new fire segment
+        if distance > d or time_difference > t:
+            fire_segments.append([fuegos[i]['id']])
+        else:
+            # Otherwise, add the fire to the current segment
+            fire_segments[-1].append(fuegos[i]['id'])
+
+    return len(fire_segments), fire_segments
 
 
 def ejemplo():
@@ -26,22 +40,5 @@ def ejemplo():
   t: float = 60.0
 
   print(segmentacionDeIncendios(fuegos, d, t))
-  print(group_by_distance_and_time(fuegos, d, t))
-
-
-
-#function that recieve an ar list of id, x, y and datetime and return all the items grouped by geodesic distance and time between the items
-def group_by_distance_and_time(fuegos: list[dict], d: float, t: float) -> list[list[str]]:
-    fire=[[fuegos[0]['id']]]
-    number_fire=0
-    for fuego in fuegos[:-1]:
-        logging.debug('a fire {}'.format(fuego))
-        for new_fuego in fuegos[number_fire:]:
-            logging.debug('a fire between {} and {}'.format(fuego['id'],new_fuego['id']))
-            logging.debug('distance {}'.format(geodesic_distance(fuego['x'], fuego['y'], new_fuego['x'], new_fuego['y'])))
-            if geodesic_distance(fuego['x'], fuego['y'], new_fuego['x'], new_fuego['y']) <= d and (datetime.strptime(fuego['time'],'%Y-%m-%dT%H:%M') - datetime.strptime(new_fuego['time'],'%Y-%m-%dT%H:%M')).total_seconds() <= t:
-                fire=addFireToList(fire,fuego['id'],new_fuego['id'])
-        fire=addFireToList(fire,fuego['id'],fuego['id'])
-    return (len(fire), fire)
-
+ 
 ejemplo()
